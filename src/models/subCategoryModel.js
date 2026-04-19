@@ -23,7 +23,9 @@ const subCategorySchema = new mongoose.Schema({
         ref: 'Category',
         required: [true, 'Sub category must belong to a category']
     }
-}, { timestamps: true });
+}, { timestamps: true ,
+    versionKey: false
+});
 
 const SubCategory = mongoose.model('SubCategory', subCategorySchema);
 

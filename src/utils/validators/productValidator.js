@@ -1,6 +1,7 @@
 const {check} = require('express-validator');
 const validatorMiddleware = require('../../middlewares/validatorMiddleware');
 const CategoryModel = require('../../models/categoryModel');
+const BrandModel = require('../../models/brandModel');
 
 
 exports.getProductValidator = [
@@ -59,7 +60,7 @@ exports.createProductValidator = [
     .withMessage('product images are required')
     .isMongoId()
     .withMessage('Invalid image ID format'),
-    check('subcategory').custom((value) => {
+    check('subcategories').custom((value) => {
         if (!value) return Promise.resolve();
         return CategoryModel.findById(value).then(subcategory => {
             if (!subcategory) {

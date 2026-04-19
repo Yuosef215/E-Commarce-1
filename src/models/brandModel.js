@@ -14,8 +14,12 @@ const brandSchema = new mongoose.Schema({
         lowercase: true,
 
     },
+    
 
-},{timestamps: true});
+},{
+    timestamps: true,
+    versionKey: false
+});
 
 
 const BrandModel = mongoose.model('Brand', brandSchema);
