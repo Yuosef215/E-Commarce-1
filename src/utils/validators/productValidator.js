@@ -59,8 +59,22 @@ exports.createProductValidator = [
     .withMessage('product images are required')
     .isMongoId()
     .withMessage('Invalid image ID format'),
-    check('subcategory').optional().isMongoId().withMessage('Invalid subcategory ID format'),
-    check('brand').optional().isMongoId().withMessage('Invalid brand ID format'),
+    check('subcategory').custom((value) => {
+        if (!value) return Promise.resolve();
+        return CategoryModel.findById(value).then(subcategory => {
+            if (!subcategory) {
+                return Promise.reject(new Error(`No subcategory for this id ${value}`));
+            }
+        });
+    }).optional().isMongoId().withMessage('Invalid subcategory ID format'),
+    check('brand').custom((value) => {
+        if (!value) return Promise.resolve();
+        return BrandModel.findById(value).then(brand => {
+            if (!brand) {
+                return Promise.reject(new Error(`No brand for this id ${value}`));
+            }
+        });
+    }).optional().isMongoId().withMessage('Invalid brand ID format'),
     check('ratingsAverage')
     .optional()
     .isNumeric()
@@ -74,6 +88,13 @@ exports.createProductValidator = [
     .isNumeric()
     .withMessage('ratingsQuantity must be a number'),
     check('category')
+    .custom((value) => {
+        return CategoryModel.findById(value).then(category => {
+            if (!category) {
+                return Promise.reject(new Error(`No category for this id ${value}`));
+            }
+        });
+    })
     .notEmpty()
     .withMessage('product category is required')
     .isMongoId()
