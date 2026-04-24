@@ -2,6 +2,8 @@ const {check} = require('express-validator');
 const validatorMiddleware = require('../../middlewares/validatorMiddleware');
 const CategoryModel = require('../../models/categoryModel');
 const BrandModel = require('../../models/brandModel');
+const SubCategory = require('../../models/subCategoryModel');
+const mongoose = require('mongoose');
 
 
 exports.getProductValidator = [
@@ -60,14 +62,45 @@ exports.createProductValidator = [
     .withMessage('product images are required')
     .isMongoId()
     .withMessage('Invalid image ID format'),
-    check('subcategories').custom((value) => {
-        if (!value) return Promise.resolve();
-        return CategoryModel.findById(value).then(subcategory => {
-            if (!subcategory) {
-                return Promise.reject(new Error(`No subcategory for this id ${value}`));
-            }
-        });
-    }).optional().isMongoId().withMessage('Invalid subcategory ID format'),
+    check('subcategories')
+  .optional()
+  .isArray().withMessage('subcategories must be an array')
+
+  .custom((ids) => {
+    // التأكد إن كل ID صحيح
+    const allValid = ids.every(id => mongoose.Types.ObjectId.isValid(id));
+    if (!allValid) {
+      throw new Error('Invalid subcategory ID format');
+    }
+    return true;
+  })
+
+  .custom(async (ids, { req }) => {
+    // 1. التأكد إنهم موجودين في DB
+    const subcategories = await SubCategory.find({
+      _id: { $in: ids }
+    });
+
+    if (subcategories.length !== ids.length) {
+      throw new Error('Some subcategories not found');
+    }
+
+    // 2. التأكد إنهم تابعين للـ category
+    const validSubs = await SubCategory.find({
+      category: req.body.category
+    });
+
+    const validIds = validSubs.map(sub => sub._id.toString());
+
+    const checker = ids.every(id => validIds.includes(id));
+    
+
+    if (!checker) {
+      throw new Error('Subcategories not belong to this category');
+    }
+
+    return true;
+  }),
     check('brand').custom((value) => {
         if (!value) return Promise.resolve();
         return BrandModel.findById(value).then(brand => {

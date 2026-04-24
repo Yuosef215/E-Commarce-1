@@ -9,10 +9,12 @@ const globalErrorHandler = require('./src/middlewares/errorMiddleware');
 const subCategoryRoute = require('./src/routes/subCategoryRoute');
 const brandRoute = require('./src/routes/brandRoute');
 const productRoute = require('./src/routes/productRoute');
+const qs = require('qs');
 
 dbConnection();
 const app = express();
 app.use(express.json());
+app.set('query parser', (str) => qs.parse(str));
 
 if (process.env.NODE_ENV === "development") {
     app.use(morgan("dev"));

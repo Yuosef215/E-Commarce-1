@@ -12,12 +12,14 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "dotenv": "^17.4.0",
+    "colors": "^1.4.0",
+    "dotenv": "^16.4.5",
     "express": "^5.2.1",
     "express-async-handler": "^1.2.0",
     "express-validator": "^7.3.2",
     "mongoose": "^9.3.3",
     "morgan": "^1.10.1",
+    "qs": "^6.15.1",
     "slugify": "^1.6.9"
   },
   "devDependencies": {
