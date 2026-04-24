@@ -2,6 +2,7 @@ const slugify = require('slugify');
 const CategoryModel = require("../models/categoryModel");
 const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/ApiError");
+const ApiFeatures = require("../utils/apiFeatures");
 
 
 // @desc Get all category
@@ -9,10 +10,17 @@ const ApiError = require("../utils/ApiError");
 // @access Public
 exports.getCategory = asyncHandler(async (req, res) => {
     const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 5;
-    const skip = (page - 1) * limit;
-    const categories = await CategoryModel.find().skip(skip).limit(limit);
-    res.status(200).json({ result: categories.length, page, data: categories });
+    const documentCounts = await CategoryModel.countDocuments();
+        const apifeatures = new ApiFeatures(CategoryModel.find(), req.query)
+        .filter()
+        .sort()
+        .limitFields()
+        .search()
+        .paginate(documentCounts);
+
+    const {mongooseQuery,paginationresult} = apifeatures;
+    const categories = await mongooseQuery;
+    res.status(200).json({ result: categories.length, paginationresult, data: categories });
 });
 
 
