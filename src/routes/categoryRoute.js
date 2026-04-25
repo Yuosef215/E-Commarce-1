@@ -9,7 +9,8 @@ const { getCategory,
     createCategory,
     getCategoryById,
     updateCategory,
-    deleteCategory } = require('../services/categoryServices');
+    deleteCategory
+ } = require('../services/categoryServices');
 
 const router = express.Router();
 
