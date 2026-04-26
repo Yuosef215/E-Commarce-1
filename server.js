@@ -1,6 +1,9 @@
+const path = require('path');
+
 const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
+
 const dbConnection = require('./src/config/database');
 const categoryRoute = require('./src/routes/categoryRoute');
 dotenv.config({ path: 'config.env' });
@@ -14,6 +17,7 @@ const qs = require('qs');
 dbConnection();
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname,'uploads')))
 app.set('query parser', (str) => qs.parse(str));
 
 if (process.env.NODE_ENV === "development") {

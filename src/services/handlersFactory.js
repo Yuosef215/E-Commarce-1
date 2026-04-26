@@ -30,6 +30,7 @@ exports.updateOne = (Model) =>
 exports.CreateOne = (Model) => 
     asyncHandler(async (req, res) => {
     const document = await Model.create(req.body);
+    console.log(req.body)
     res.status(201).json({ data: document });
 });
 
@@ -44,19 +45,23 @@ exports.getOne = (Model) =>
 });
 
 exports.getAll = (Model, modelName = '') =>
-    
     asyncHandler(async (req, res) => {
-        const filter = {};
-    if(req.filterOdj){filter = filterOdj};
+        let filter = {}; // ✅ let بدل const
+        if(req.filterOdj){ filter = req.filterOdj }; // ✅ req.filterOdj
+        
         const documentCounts = await Model.countDocuments();
-            const apifeatures = new ApiFeatures(Model.find(filter), req.query)
+        const apifeatures = new ApiFeatures(Model.find(filter), req.query)
             .filter()
             .sort()
             .limitFields()
             .search(modelName)
             .paginate(documentCounts);
     
-        const {mongooseQuery,paginationresult} = apifeatures;
+        const { mongooseQuery, paginationresult } = apifeatures;
         const documents = await mongooseQuery;
-        res.status(200).json({ result: documents.length, paginationresult, data: documents });
+        res.status(200).json({ 
+            result: documents.length, 
+            paginationresult, 
+            data: documents 
+        });
 });
