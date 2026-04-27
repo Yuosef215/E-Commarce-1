@@ -8,9 +8,9 @@ exports.deleteOne = (Model) =>
         const { id } = req.params;
         const document = await Model.findByIdAndDelete(id);
         if (!document) {
-            return next(new ApiError(`Brand with id ${id} not found`, 404));
+            return next(new ApiError(`document with id ${id} not found`, 404));
         }
-        res.status(200).json({ message: `Brand with id ${id} deleted` });
+        res.status(200).json({ message: `document with id ${id} deleted` });
 });
 
 exports.updateOne = (Model) => 
@@ -30,7 +30,6 @@ exports.updateOne = (Model) =>
 exports.CreateOne = (Model) => 
     asyncHandler(async (req, res) => {
     const document = await Model.create(req.body);
-    console.log(req.body)
     res.status(201).json({ data: document });
 });
 

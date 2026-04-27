@@ -12,6 +12,7 @@ const globalErrorHandler = require('./src/middlewares/errorMiddleware');
 const subCategoryRoute = require('./src/routes/subCategoryRoute');
 const brandRoute = require('./src/routes/brandRoute');
 const productRoute = require('./src/routes/productRoute');
+const userRoute = require('./src/routes/userRoute');
 const qs = require('qs');
 
 dbConnection();
@@ -29,6 +30,7 @@ app.use('/api/v1/categories', categoryRoute);
 app.use('/api/v1/subcategories', subCategoryRoute);
 app.use('/api/v1/brands', brandRoute);
 app.use('/api/v1/products', productRoute);
+app.use('/api/v1/users', userRoute);
 app.use((req, res, next) => {
     next(new ApiError(`Not Found - ${req.originalUrl}`, 400));
 });

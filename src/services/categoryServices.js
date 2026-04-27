@@ -5,6 +5,7 @@ const CategoryModel = require("../models/categoryModel");
 const factory = require('./handlersFactory');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require("express-async-handler");
+const  {uploadSingleImage}  = require('../middlewares/uploadimageMiddleware');
 
 // 1-  DiskStorage
 // const multerStorage = multer.diskStorage({
@@ -18,18 +19,22 @@ const asyncHandler = require("express-async-handler");
 //     },
 // });
 
-const multerStorage = multer.memoryStorage();
+// const multerStorage = multer.memoryStorage();
 
-const multerFilter = function (req, file, cb) {
-    if (file.mimetype.startsWith("image")){
-        cb (null, true)
-    }else {
-        cb(new ApiError(`Only Image allowed`,400) ,false)
-    }
-}
+// const multerFilter = function (req, file, cb) {
+//     if (file.mimetype.startsWith("image")){
+//         cb (null, true)
+//     }else {
+//         cb(new ApiError(`Only Image allowed`,400) ,false)
+//     }
+// }
 
 
-const upload = multer({storage: multerStorage , fileFilter:multerFilter});
+// const upload = multer({storage: multerStorage , fileFilter:multerFilter});
+
+
+
+exports.uploadCategoryImage = uploadSingleImage('image');
 
 exports.resizeImage =asyncHandler( async(req,res,next) => {
     const filename = `caregory-${uuidv4()}-${Date.now()}.jpeg`;
@@ -44,9 +49,6 @@ exports.resizeImage =asyncHandler( async(req,res,next) => {
 
     next();
 });
-
-
-exports.uploadCategoryImage = upload.single('image');
 
 exports.getCategory = factory.getAll(CategoryModel);
 
