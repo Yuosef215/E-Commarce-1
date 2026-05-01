@@ -2,6 +2,7 @@ const { check, body } = require('express-validator');
 const validatorMiddleware = require('../../middlewares/validatorMiddleware');
 const slugify = require('slugify');
 const User = require('../../models/userModel');
+const bcrypt = require('bcryptjs')
 
 exports.getUserValidator = [
     check('id').isMongoId().withMessage('Invalid User ID format'),
@@ -69,7 +70,59 @@ exports.updateUserValidator = [
         req.body.slug = slugify(val);
         return true;
     }),
+    check('phone')
+        .optional()
+        .isMobilePhone(["ar-EG", "ar-SA"])
+        .withMessage('Invalid phone number only accepted Egy and SA Phone numbers'),
+    check('email')
+        .notEmpty()
+        .withMessage('Email required')
+        .isEmail()
+        .withMessage('Invalid email address')
+        .custom((val) => User.findOne({ email: val }).then((user) => {
+            if (user) {
+                return Promise.reject(new Error('email Alredy in user'))
+            }
+        })),
+    check('profilImg')
+        .optional(),
+    // Role
+    check('role')
+        .optional(),
     validatorMiddleware
+];
+
+exports.changeUserPasswordValidator = [
+    check('id').isMongoId().withMessage('Invalid User ID format'),
+    body('currentPassword')
+        .notEmpty()
+        .withMessage('you must enter your current password'),
+
+    body('passwordConfirm')
+        .notEmpty()
+        .withMessage('You must enter the password confirm'),
+        
+    body('password')
+    .notEmpty()
+    .withMessage('you must enter new password')
+    .custom(async(val, {req}) => {
+        const user = await User.findById(req.params.id)
+        if(!user) {
+            throw new Error('There is no user for this id');
+        }
+        const isCorrect = await bcrypt.compare(req.body.currentPassword, user.password);
+        if(!isCorrect) {
+            throw new Error('incorrect currnt password')
+        }
+        return true
+    })
+    .custom((password, { req }) => {
+            if (password !== req.body.passwordConfirm) {
+                throw new Error('password Confirmation incorrect')
+            }
+            return true;
+        }),
+       validatorMiddleware
 ];
 
 exports.deleteUserValidator = [

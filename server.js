@@ -7,12 +7,13 @@ const morgan = require('morgan');
 const dbConnection = require('./src/config/database');
 const categoryRoute = require('./src/routes/categoryRoute');
 dotenv.config({ path: 'config.env' });
-const ApiError = require('./src/utils/ApiError');
+const ApiError = require('./src/utils/apiError');
 const globalErrorHandler = require('./src/middlewares/errorMiddleware');
 const subCategoryRoute = require('./src/routes/subCategoryRoute');
 const brandRoute = require('./src/routes/brandRoute');
 const productRoute = require('./src/routes/productRoute');
 const userRoute = require('./src/routes/userRoute');
+const authRoute = require('./src/routes/authRoute');
 const qs = require('qs');
 
 dbConnection();
@@ -31,6 +32,8 @@ app.use('/api/v1/subcategories', subCategoryRoute);
 app.use('/api/v1/brands', brandRoute);
 app.use('/api/v1/products', productRoute);
 app.use('/api/v1/users', userRoute);
+app.use('/api/v1/auth', authRoute);
+
 app.use((req, res, next) => {
     next(new ApiError(`Not Found - ${req.originalUrl}`, 400));
 });

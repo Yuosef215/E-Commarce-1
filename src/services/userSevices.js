@@ -3,7 +3,7 @@ const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
 const User = require("../models/userModel");
 const factory = require('./handlersFactory');
-const ApiError = require('../utils/ApiError');
+const ApiError = require('../utils/apiError');
 const asyncHandler = require("express-async-handler");
 const  {uploadSingleImage}  = require('../middlewares/uploadimageMiddleware');
 const bcrypt = require('bcryptjs')
@@ -61,12 +61,13 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
 exports.changeUserPassword = asyncHandler(async (req, res, next) => {
     
     const document = await User.findById(req.params.id);
+        if (!document) {
+            return next(new ApiError(`Document with id ${req.params.id} not found`, 404));
+        };
+        document.password = req.body.password; // ✅ الـ pre save هيعمل الـ hash
+    document.passwordChangedAt = Date.now();
     
-    if (!document) {
-        return next(new ApiError(`Document with id ${req.params.id} not found`, 404));
-    }
-
-    document.password = await bcrypt.hash(req.body.password, 12);
+    
     await document.save();
 
     res.status(200).json({ data: document });

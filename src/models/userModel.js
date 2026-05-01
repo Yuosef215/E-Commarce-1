@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: [true, 'email required'],
-        uniq: true,
+        unique: true,
         lowercase: true,
     },
     phone: String,
@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema({
         required: [true, 'password required'],
         minlength: [6, "To short password"],
     },
+    passwordChangedAt: Date,
     role: {
         type: String,
         enum: ["user", "admin"],
@@ -35,7 +36,10 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
-}, { timestamps: true, versionKey: false });
+}, { 
+    timestamps: true, 
+    versionKey: false
+   });
 
 userSchema.pre('save', async function () {
     if(!this.isModified('password')) return;

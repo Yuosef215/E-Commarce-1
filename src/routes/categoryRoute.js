@@ -14,12 +14,14 @@ const { getCategory,
     resizeImage
 } = require('../services/categoryServices');
 
+const AuthService = require('../services/authServices');
+
 
 
 const router = express.Router();
 
 router.route('/').get(getCategory)
-    .post(uploadCategoryImage, resizeImage, createCategoryValidator, createCategory);
+    .post(AuthService.protect,uploadCategoryImage, resizeImage, createCategoryValidator, createCategory);
 router.route('/:id').get(getCategoryValidator, getCategoryById)
     .put(uploadCategoryImage, resizeImage, updateCategoryValidator, updateCategory)
     .delete(deleteCategoryValidator, deleteCategory);
