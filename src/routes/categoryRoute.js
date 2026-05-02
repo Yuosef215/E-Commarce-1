@@ -21,10 +21,29 @@ const AuthService = require('../services/authServices');
 const router = express.Router();
 
 router.route('/').get(getCategory)
-    .post(AuthService.protect,uploadCategoryImage, resizeImage, createCategoryValidator, createCategory);
+    .post(
+        AuthService.protect,
+        AuthService.allowedTo("admin","manager"),
+        uploadCategoryImage, 
+        resizeImage, 
+        createCategoryValidator, 
+        createCategory
+    );
 router.route('/:id').get(getCategoryValidator, getCategoryById)
-    .put(uploadCategoryImage, resizeImage, updateCategoryValidator, updateCategory)
-    .delete(deleteCategoryValidator, deleteCategory);
+    .put(
+        AuthService.protect,
+        AuthService.allowedTo("admin","manager"),
+        uploadCategoryImage, 
+        resizeImage, 
+        updateCategoryValidator, 
+        updateCategory
+    )
+    .delete(
+        AuthService.protect,
+        AuthService.allowedTo("admin"),
+        deleteCategoryValidator, 
+        deleteCategory
+    );
 
 
 

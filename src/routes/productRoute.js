@@ -12,13 +12,30 @@ const { getProducts,
     deleteProduct
 } = require('../services/productServices');
 
+const AuthService = require('../services/authServices');
+
 const router = express.Router();
 
 router.route('/').get(getProducts)
-    .post(createProductValidator, createProduct);
+    .post(
+        AuthService.protect,
+        AuthService.allowedTo("admin","manager"),
+        createProductValidator, 
+        createProduct
+    );
 router.route('/:id').get(getProductValidator, getProductById)
-    .put(updateProductValidator, updateProduct)
-    .delete(deleteProductValidator, deleteProduct);
+    .put(
+        AuthService.protect,
+        AuthService.allowedTo("admin","manager"),
+        updateProductValidator, 
+        updateProduct
+    )
+    .delete(
+        AuthService.protect,
+        AuthService.allowedTo("admin"),
+        deleteProductValidator, 
+        deleteProduct
+    );
 
 
 

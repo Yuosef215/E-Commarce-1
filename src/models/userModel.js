@@ -27,22 +27,25 @@ const userSchema = new mongoose.Schema({
         minlength: [6, "To short password"],
     },
     passwordChangedAt: Date,
+    passwordResetCode: String,
+    passwordExpires: Date,
+    passwordResetVerified: Boolean,
     role: {
         type: String,
-        enum: ["user", "admin"],
+        enum: ["user", "manager", "admin"],
         default: 'user',
     },
     active: {
         type: Boolean,
         default: true,
     },
-}, { 
-    timestamps: true, 
+}, {
+    timestamps: true,
     versionKey: false
-   });
+});
 
 userSchema.pre('save', async function () {
-    if(!this.isModified('password')) return;
+    if (!this.isModified('password')) return;
     this.password = await bcrypt.hash(this.password, 12);
 })
 
