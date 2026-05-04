@@ -4,14 +4,11 @@ const ApiError = require('../utils/apiError');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const sendEmail = require('../utils/sendEmail');
+const createToken = require('../utils/createToken');
 
 const User = require('../models/userModel');
 
-const createToken = (payload) => {
-    return jwt.sign({ userId: payload }, process.env.JWT_SECRET_KEY, {
-        expiresIn: process.env.JWT_EXPIRE_TIME,
-    });
-}
+
 
 
 exports.signup = asyucHandler(async (req, res, next) => {
@@ -30,7 +27,10 @@ exports.signup = asyucHandler(async (req, res, next) => {
 exports.login = asyucHandler(async (req, res, next) => {
     // 1) check if password and email in the body (validation)
     // 2) check if user exist & check if password is correct
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email: req.body.email ,}).select("+password");
+    console.log('user:', user); // ✅
+    console.log('password from body:', req.body.password); // ✅
+    console.log('password in db:', user?.password)
     if (!user || !await bcrypt.compare(req.body.password, user.password)) {
         return next(new ApiError("Incorrect email or password"))
     };
@@ -126,4 +126,46 @@ exports.forgetPassword = asyucHandler(async (req, res, next) => {
 
 
 
+exports.verifyResetCode = asyucHandler(async (req, res, next) => {
+    // 1) get user based on email
+    const hashedResetCode = crypto
+    .createHash('sha256')
+    .update(req.body.resetCode)
+    .digest('hex');
+    const user = await User.findOne({
+        passwordResetCode: hashedResetCode,
+        passwordExpires: {$gt: Date.now()},
+    });
+    if(!user) {
+        return next(new ApiError("Invalid reset code or reset code expired", 400));
+    };
 
+    // 2) Reset code valid
+    user.passwordResetVerified = true;
+    await user.save();
+
+    res.status(200).json({status: "Success", message: "Reset code verified"});
+});
+
+exports.resetPassword = asyucHandler(async (req, res, next) => {
+    // 1) get user based on email
+    const user = await User.findOne({email: req.body.email});
+    if(!user) {
+        return next(new ApiError(`There is no user with that email ${req.body.email}`, 404))
+    };
+
+    // 2) if user exsit, check if reset code verified
+    if(!user.passwordResetVerified) {
+        return next(new ApiError("Reset code not verified", 400));
+    };
+
+    user.password = req.body.newPassword;
+    user.passwordResetCode = undefined;
+    user.passwordExpires = undefined;
+    user.passwordResetVerified = undefined;
+
+    await user.save();
+    // 3) if everything is ok, reset password, generate token, send response to client side
+    const token = createToken(user._id);
+    res.status(200).json({status: "Success", message: "Password reset successfully", token});
+});

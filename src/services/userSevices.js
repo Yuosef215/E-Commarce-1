@@ -6,7 +6,8 @@ const factory = require('./handlersFactory');
 const ApiError = require('../utils/apiError');
 const asyncHandler = require("express-async-handler");
 const  {uploadSingleImage}  = require('../middlewares/uploadimageMiddleware');
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcryptjs');
+const createToken = require('../utils/createToken');
 
 
 exports.uploadUserImage = uploadSingleImage('profileImg');
@@ -64,7 +65,7 @@ exports.changeUserPassword = asyncHandler(async (req, res, next) => {
         if (!document) {
             return next(new ApiError(`Document with id ${req.params.id} not found`, 404));
         };
-        document.password = req.body.password; // ✅ الـ pre save هيعمل الـ hash
+        document.password = req.body.password;
     document.passwordChangedAt = Date.now();
     
     
@@ -74,3 +75,33 @@ exports.changeUserPassword = asyncHandler(async (req, res, next) => {
 });
 
 exports.deleteUser = factory.deleteOne(User);
+
+
+exports.getLoggedUserData = asyncHandler(async (req,res,next) => {
+    req.params.id = req.user._id;
+    next();
+});
+
+
+exports.updateLoggedUserPassword = asyncHandler(async (req,res,next) => {
+    // 1) UPDATE USER DOCUMENT
+    const user = await User.findByIdAndUpdate(req.user._id
+        ,{password: await bcrypt.hash(req.body.password, 12),
+        passwordChangedAt: Date.now()
+    },
+    {new: true}
+    );
+    // 2) GENARATE TOKEN
+    const token = createToken(user._id);
+    res.status(200).json({status: "Success", token, data: user}); 
+});
+
+exports.updateLoggedUserData = asyncHandler(async (req,res,next) => {
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, {
+        name: req.body.name,
+        phone: req.body.phone,
+        email: req.body.email,
+        profileImg: req.body.profileImg,
+    }, {new: true});
+    res.status(200).json({status: "Success", data: updatedUser});
+});

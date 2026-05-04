@@ -1,12 +1,12 @@
-const path = require('path');
-
-const express = require('express');
 const dotenv = require('dotenv');
+dotenv.config({ path: 'config.env' });
+
+const path = require('path');
+const express = require('express');
 const morgan = require('morgan');
 
 const dbConnection = require('./src/config/database');
 const categoryRoute = require('./src/routes/categoryRoute');
-dotenv.config({ path: 'config.env' });
 const ApiError = require('./src/utils/apiError');
 const globalErrorHandler = require('./src/middlewares/errorMiddleware');
 const subCategoryRoute = require('./src/routes/subCategoryRoute');
